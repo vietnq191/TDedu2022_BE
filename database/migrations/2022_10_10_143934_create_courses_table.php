@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->string('username', 255);
-            $table->string('email', 255);
-            $table->string('password', 255);
-            $table->text('bearer_token')->nullable();
-            $table->dateTime('last_login')->nullable();
+            $table->string('code', 255);
+            $table->string('name', 255);
+            $table->text('description')->nullable();
+            $table->bigInteger('lecturer_id')->unsigned()->nullable();
+            $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('courses');
     }
 };
