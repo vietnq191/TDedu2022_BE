@@ -183,6 +183,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
+        Cog\Laravel\Ban\Providers\BanServiceProvider::class,
         
         /*
          * Package Service Providers...

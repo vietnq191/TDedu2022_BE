@@ -18,8 +18,11 @@ return new class extends Migration
             $table->string('username', 255);
             $table->string('email', 255);
             $table->string('password', 255);
+            $table->enum('status', ['Active', 'Inactive', 'Banned'])->default('Active');
             $table->text('bearer_token')->nullable();
             $table->dateTime('last_login')->nullable();
+            $table->rememberToken();
+            $table->timestamp('email_verified_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
