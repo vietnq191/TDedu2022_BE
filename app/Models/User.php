@@ -3,14 +3,17 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Cog\Laravel\Ban\Traits\Bannable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, Bannable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -18,9 +21,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
+        'status',
     ];
 
     /**
@@ -32,7 +36,6 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'bearer_token',
-        'active_token',
     ];
 
     /**
@@ -43,4 +46,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getProfiles()
+    {
+        return $this->belongsTo(UserProfile::class, 'id', 'user_id')->whereNull('user_profiles.deleted_at');
+    }
+
 }

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('user_profiles', function (Blueprint $table) {
             $table->bigInteger('user_id');
             $table->string('full_name', 255);
-            $table->string('moblie_phone', 255);
+            $table->string('mobile_phone', 255);
             $table->datetime('date_of_birth')->nullable();
             $table->text('address')->nullable();
             $table->enum('gender', ['M', 'F', 'U'])->default('M');

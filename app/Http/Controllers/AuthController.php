@@ -2,66 +2,62 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Repositories\User\Auth\AuthRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    /**
+     * @var AuthRepositoryInterface|\App\Repositories\Repository
+     */
+    protected $authRepo;
+    protected $authUser;
+
+    public function __construct(AuthRepositoryInterface $authRepo)
     {
-        $messages = [
-            'user_notfound' => 'Your authentication information is incorrect. Please try again',
-        ];
+        $this->authRepo = $authRepo;
+        $this->authUser = Auth::guard('api')->user();
+    }
 
-        $user = User::where(function ($query) use ($request) {
-            return $query->where('email', $request->username)->orWhere('username', $request->username);
-        })->first();
-
+    public function login(LoginRequest $request)
+    {
+        $messages = ['user_notfound' => 'Your authentication information is incorrect. Please try again'];
+        $data = $request->getParam();
+        $user = $this->authRepo->getUserByUsernameOrMail($data);
         if (!$user) {
-            return response()->json([
-                'username' => [$messages['user_notfound']],
-            ], 400);
-        }
-        else if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'password' => [$messages['user_notfound']],
-            ], 400);
+            return response()->json(array(
+                'username' => array($messages['user_notfound'])
+            ), 400);
+        } else if (!Hash::check($request['password'], $user->password)) {
+            return response()->json(array(
+                'password' => array($messages['user_notfound'])
+            ), 400);
         }
 
-        $token = $user->createToken('api', ['api'])->accessToken;
-        return $this->createPassportToken($user, $token);
+        return response()->json($this->authRepo->login($user));
     }
 
-    public function logout(Request $request)
+    public function logout()
     {
-        $user = Auth::guard('api')->user();
-        $user->bearer_token = '';
-        $user->save();
-        return response()->json(['message' => "Logout success", 'revoke' => $user->token()->revoke()]);
-    }
-
-    public function userProfile(Request $request)
-    {
-        return response()->json(Auth::guard('api')->user());
-    }
-
-    private function createPassportToken($user, $token)
-    {
-        $user->bearer_token = $token;
-        $firsttime_login = false;
-        if ($user->last_login == null) {
-            $firsttime_login = true;
+        if ($this->authUser) {
+            $user = $this->authRepo->logout($this->authUser);
+            return response()->json(['message' => array("Logout success"), 'revoke' => $user->token()->revoke()]);
         }
-        $user->last_login = now();
-        $user->save();
-        $user->first_time_login = $firsttime_login;
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => 0,
-            'user' => $user,
-        ]);
+
+        return response()->json(['message' => array("Not found authentication")], 400);
+    }
+
+    public function userProfile()
+    {
+        return response()->json($this->authRepo->getProfiles($this->authUser));
+    }
+
+    public function register(RegisterRequest $request) {
+        $data = $request->getParam();
+        return response()->json($this->authRepo->register($data));
     }
 }

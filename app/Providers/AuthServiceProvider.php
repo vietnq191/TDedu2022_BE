@@ -5,6 +5,7 @@ namespace App\Providers;
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Passport\Passport;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -32,5 +33,12 @@ class AuthServiceProvider extends ServiceProvider
         Passport::tokensCan([
             'api' => 'User api',
         ]);
+
+        // Implicitly grant "Super Admin" role all permission checks using can()
+        Gate::before(function ($user, $ability) {
+            if ($user->hasRole('Super Admin')) {
+                return true;
+            }
+        });
     }
 }
