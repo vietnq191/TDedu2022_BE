@@ -2,12 +2,13 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Rules\Emails;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
-class LoginRequest extends FormRequest
+class ChangePasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,27 +23,30 @@ class LoginRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function rules()
     {
         return [
-            'username' => ['required', new Emails("Username/Email is not format.", true), 'max:255'],
-            'password' => 'required|string|min:8',
+            'id' => ['required', Rule::exists('users', 'id')->whereNull('deleted_at')],
+            'old_password' => 'required|string|min:8|max:255',
+            'new_password' => 'required|string|min:8|max:255|confirmed',
         ];
     }
 
     public function getParam()
     {
-        return request()->only('username', 'password');
+        return request()->only('old_password', 'new_password');
     }
 
-    public function messages()
+    protected function prepareForValidation()
     {
-        return [
-            'username.required' => 'Username/Email is required.',
-            'username.max' => 'Username/Email is not over 255 characters.',
-        ];
+        $user = Auth::guard('api')->user();
+        $idNotExist = 0;
+        
+        $this->merge([
+            'id' => $user->id ?? $idNotExist,
+        ]);
     }
 
     protected function failedValidation(Validator $validator): void

@@ -24,4 +24,8 @@ Route::prefix('auth')->group(function(){
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user-profile', [AuthController::class, 'userProfile']);
+    Route::post('/change-pass', [AuthController::class, 'changePassword']);
+    Route::post('/send-reset-password', [AuthController::class, 'sendResetPassword']);
+    Route::put('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::put('/update-profile', [AuthController::class, 'updateProfile']);
 });

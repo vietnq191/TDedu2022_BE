@@ -10,6 +10,18 @@ class UserProfile extends Model
     use HasFactory;
 
     /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('softDelete', function ($builder) {
+            return $builder->whereNull('deleted_at');
+        });
+    }
+    
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

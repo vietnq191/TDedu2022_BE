@@ -16,6 +16,18 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, Bannable, HasRoles;
 
     /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('softDelete', function ($builder) {
+            return $builder->whereNull('deleted_at');
+        });
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -51,5 +63,4 @@ class User extends Authenticatable
     {
         return $this->belongsTo(UserProfile::class, 'id', 'user_id')->whereNull('user_profiles.deleted_at');
     }
-
 }

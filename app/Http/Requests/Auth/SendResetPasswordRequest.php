@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class LoginRequest extends FormRequest
+class SendResetPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,14 +27,13 @@ class LoginRequest extends FormRequest
     public function rules()
     {
         return [
-            'username' => ['required', new Emails("Username/Email is not format.", true), 'max:255'],
-            'password' => 'required|string|min:8',
+            'username' => ['required', new Emails("Username/Email is not format", true), 'max:255'],
         ];
     }
 
     public function getParam()
     {
-        return request()->only('username', 'password');
+        return request()->only('username');
     }
 
     public function messages()
