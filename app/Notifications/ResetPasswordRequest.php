@@ -42,7 +42,7 @@ class ResetPasswordRequest extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        $url = env('APP_FE_URL') . '/reset-password/?token=' . $this->token;
+        $url = env('APP_FE_URL') . 'reset-password/?token=' . $this->token;
 
         return (new MailMessage)
             ->line('You are receiving this email because we received a password reset request for your account.')
