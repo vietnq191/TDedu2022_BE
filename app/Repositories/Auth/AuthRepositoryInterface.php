@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\User\Auth;
+namespace App\Repositories\Auth;
 
 use App\Repositories\RepositoryInterface;
 
@@ -15,4 +15,10 @@ interface AuthRepositoryInterface extends RepositoryInterface
     public function logout($user);
 
     public function register($data);
+
+    public function sendResetPassword($user);
+
+    public function changePassword($id, $new_password);
+
+    public function updateProfile($id, $data);
 }

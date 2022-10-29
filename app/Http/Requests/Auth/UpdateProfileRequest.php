@@ -2,15 +2,15 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Rules\Emails;
 use App\Rules\WithoutSpaces;
 use App\Rules\WithoutSpecialCharacters;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
-class RegisterRequest extends FormRequest
+class UpdateProfileRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,31 +25,40 @@ class RegisterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function rules()
     {
         return [
-            'email' => ['required', new Emails("", false), 'max:255', Rule::unique('users')->whereNull('deleted_at')],
+            'id' => ['required', Rule::exists('users', 'id')->whereNull('deleted_at')],
             'username' => [
                 'required', new WithoutSpaces(),
-                new WithoutSpecialCharacters(), 'max:255', Rule::unique('users')->whereNull('deleted_at'),
+                new WithoutSpecialCharacters(), 'max:255', Rule::unique('users')->whereNull('deleted_at')->ignore($this->id),
             ],
             'full_name' => 'required|string|min:3|max:255',
             'mobile_phone' => [
                 'required', 'numeric', 'digits_between:10,10',
-                Rule::unique('user_profiles')->whereNull('deleted_at'),
+                Rule::unique('user_profiles')->whereNull('deleted_at')->ignore($this->id, 'user_id'),
             ],
             'date_of_birth' => 'required|date_format:Y-m-d|before:today',
             'gender' => 'required|in:M,F,U',
             'address' => 'sometimes',
-            'password' => 'required|string|min:8|max:255|confirmed',
         ];
     }
 
     public function getParam()
     {
-        return request()->only('email', 'username', 'full_name', 'mobile_phone', 'date_of_birth', 'gender', 'address', 'password');
+        return request()->only('username', 'full_name', 'mobile_phone', 'date_of_birth', 'gender', 'address');
+    }
+
+    protected function prepareForValidation()
+    {
+        $user = Auth::guard('api')->user();
+        $idNotExist = 0;
+        
+        $this->merge([
+            'id' => $user->id ?? $idNotExist,
+        ]);
     }
 
     public function messages()

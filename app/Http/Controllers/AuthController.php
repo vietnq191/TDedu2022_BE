@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\AuthResetPasswordRequest;
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Repositories\User\Auth\AuthRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Http\Requests\Auth\SendResetPasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Repositories\Auth\AuthRepositoryInterface;
+use App\Repositories\PasswordReset\PasswordResetRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,19 +20,27 @@ class AuthController extends Controller
      * @var AuthRepositoryInterface|\App\Repositories\Repository
      */
     protected $authRepo;
+    protected $passwordResetRepo;
     protected $authUser;
 
-    public function __construct(AuthRepositoryInterface $authRepo)
+    public function __construct(AuthRepositoryInterface $authRepo, PasswordResetRepositoryInterface $passwordResetRepo)
     {
         $this->authRepo = $authRepo;
+        $this->passwordResetRepo = $passwordResetRepo;
         $this->authUser = Auth::guard('api')->user();
     }
 
     public function login(LoginRequest $request)
     {
+        //To do: Error message
         $messages = ['user_notfound' => 'Your authentication information is incorrect. Please try again'];
+
         $data = $request->getParam();
-        $user = $this->authRepo->getUserByUsernameOrMail($data);
+
+        //To do: Get user by username or mail
+        $user = $this->authRepo->getUserByUsernameOrMail($data['username']);
+
+        //To do: Check account is exist and match password
         if (!$user) {
             return response()->json(array(
                 'username' => array($messages['user_notfound'])
@@ -43,6 +56,7 @@ class AuthController extends Controller
 
     public function logout()
     {
+        //To do: Check user has logged
         if ($this->authUser) {
             $user = $this->authRepo->logout($this->authUser);
             return response()->json(['message' => array("Logout success"), 'revoke' => $user->token()->revoke()]);
@@ -59,5 +73,97 @@ class AuthController extends Controller
     public function register(RegisterRequest $request) {
         $data = $request->getParam();
         return response()->json($this->authRepo->register($data));
+    }
+
+    public function changePassword(ChangePasswordRequest $request) {
+        $messages = ['incorrect_password' => 'Old password is incorect.'];
+        $data = $request->getParam();
+
+        //To do: Check auth is valid
+        if($this->authUser) {
+            //To do: Check old password is correct
+            if (Hash::check($data['old_password'], $this->authUser->password)) {
+
+                //To do: Find user and update password
+                $user = $this->authRepo->getUserByUsernameOrMail($this->authUser->email);
+                $result = $this->authRepo->changePassword($user->id, $data['new_password']);
+    
+                if(!$result){
+                    return response()->json(['message' => ['Password change failed']]);
+                }
+    
+                return response()->json(['message' => ['Password changed successfully.']]);
+            } else {
+                return response()->json(['old_password' => [$messages['incorrect_password']]], 400);
+            }    
+        }
+
+        return response()->json(['message' => ['Not found authentication']]);
+    }
+
+    public function sendResetPassword(SendResetPasswordRequest $request) {
+        $data = $request->getParam();
+
+        //To do: Get user by username or mail
+        $user = $this->authRepo->getUserByUsernameOrMail($data['username']);
+
+        if (!$user) {
+            return response()->json([
+                'email' => ["Your authentication information is incorrect. Please try again"],
+            ], 400);
+        }
+
+        //To do: Send mail queue
+        $this->authRepo->sendResetPassword($user);
+
+        return response()->json([
+            'message' => ["We have emailed your password reset link!"]
+        ]);
+    }
+
+    public function resetPassword(AuthResetPasswordRequest $request) {
+        $data = $request->getParam();
+        
+        //To do: Get account by token
+        $passwordReset = $this->passwordResetRepo->getPasswordResetByToken($data['token']);
+        if (!$passwordReset) {
+            return response()->json([
+                'token' => ['This password reset token is invalid.'],
+            ], 400);
+        }
+
+        //To do: check token is valid
+        if (Carbon::parse($passwordReset->updated_at)->addMinutes(720)->isPast()) {
+            $this->passwordResetRepo->delete($passwordReset->id);
+
+            return response()->json([
+                'token' => ['This password reset token is invalid.'],
+            ], 400);
+        }
+
+        //To do: check user is exist
+        $user = $this->authRepo->getUserByUsernameOrMail($passwordReset->email);
+        if (!$user) {
+            return response()->json([
+                'token' => ['User not found.'],
+            ], 400);
+        }
+        
+        //To do: Update password
+        $result = $this->authRepo->changePassword($user->id, $data['password']);
+        if(!$result) {
+            return response()->json(['message' => ['Password change failed']]);
+        }
+        //To do: Delete token
+        $this->passwordResetRepo->delete($passwordReset->id);
+
+        return response()->json([
+            'message' => ['Password changed successfully.'],
+        ]);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request) {
+       $data = $request->getParam();
+       return response()->json($this->authRepo->updateProfile($request['id'], $data));
     }
 }

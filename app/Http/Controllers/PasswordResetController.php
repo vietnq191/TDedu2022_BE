@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserCourse;
+use App\Models\PasswordReset;
 use Illuminate\Http\Request;
 
-class UserCourseController extends Controller
+class PasswordResetController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -41,10 +41,10 @@ class UserCourseController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\UserCourse  $userCourse
+     * @param  \App\Models\PasswordReset  $passwordReset
      * @return \Illuminate\Http\Response
      */
-    public function show(UserCourse $userCourse)
+    public function show(PasswordReset $passwordReset)
     {
         //
     }
@@ -52,10 +52,10 @@ class UserCourseController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\UserCourse  $userCourse
+     * @param  \App\Models\PasswordReset  $passwordReset
      * @return \Illuminate\Http\Response
      */
-    public function edit(UserCourse $userCourse)
+    public function edit(PasswordReset $passwordReset)
     {
         //
     }
@@ -64,10 +64,10 @@ class UserCourseController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\UserCourse  $userCourse
+     * @param  \App\Models\PasswordReset  $passwordReset
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, UserCourse $userCourse)
+    public function update(Request $request, PasswordReset $passwordReset)
     {
         //
     }
@@ -75,10 +75,10 @@ class UserCourseController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\UserCourse  $userCourse
+     * @param  \App\Models\PasswordReset  $passwordReset
      * @return \Illuminate\Http\Response
      */
-    public function destroy(UserCourse $userCourse)
+    public function destroy(PasswordReset $passwordReset)
     {
         //
     }

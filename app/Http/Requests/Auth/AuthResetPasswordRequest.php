@@ -2,12 +2,11 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Rules\Emails;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class LoginRequest extends FormRequest
+class AuthResetPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,27 +21,26 @@ class LoginRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function rules()
     {
         return [
-            'username' => ['required', new Emails("Username/Email is not format.", true), 'max:255'],
-            'password' => 'required|string|min:8',
+            'token' => 'required|string|min:6|exists:App\Models\PasswordReset,token',
+            'password' => 'required|string|min:8|max:255|confirmed',
         ];
-    }
-
-    public function getParam()
-    {
-        return request()->only('username', 'password');
     }
 
     public function messages()
     {
         return [
-            'username.required' => 'Username/Email is required.',
-            'username.max' => 'Username/Email is not over 255 characters.',
+            'token' => 'This password reset token is invalid.',
         ];
+    }
+
+    public function getParam()
+    {
+        return request()->only('token', 'password');
     }
 
     protected function failedValidation(Validator $validator): void

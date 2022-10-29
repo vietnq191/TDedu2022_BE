@@ -15,13 +15,23 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(
-            \App\Repositories\User\Auth\AuthRepositoryInterface::class,
-            \App\Repositories\User\Auth\AuthRepository::class
+            \App\Repositories\Auth\AuthRepositoryInterface::class,
+            \App\Repositories\Auth\AuthRepository::class
         );
 
         $this->app->singleton(
             \App\Repositories\User\UserRepositoryInterface::class,
             \App\Repositories\User\UserRepository::class
+        );
+
+        $this->app->singleton(
+            \App\Repositories\UserProfile\UserProfileRepositoryInterface::class,
+            \App\Repositories\UserProfile\UserProfileRepository::class
+        );
+
+        $this->app->singleton(
+            \App\Repositories\PasswordReset\PasswordResetRepositoryInterface::class,
+            \App\Repositories\PasswordReset\PasswordResetRepository::class
         );
     }
 
