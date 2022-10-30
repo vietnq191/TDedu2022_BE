@@ -27,26 +27,46 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'delete user']);
 
         // Create roles and assign existing permissions
-        $role1 = Role::create(['name' => 'Lecturer']);
-        $role1->givePermissionTo('list user');
-        $role1->givePermissionTo('create user');
-        $role1->givePermissionTo('edit user');
+        $roleLecturer = Role::create(['name' => 'Lecturer']);
+        $roleLecturer->givePermissionTo('list user');
+        $roleLecturer->givePermissionTo('create user');
+        $roleLecturer->givePermissionTo('edit user');
         $lecturer = User::where('username', 'lecturer')->first();
         if ($lecturer) {
-            $lecturer->assignRole($role1);
+            $lecturer->assignRole($roleLecturer);
         }
 
-        $role2 = Role::create(['name' => 'Student']);
-        $role2->givePermissionTo('list user');
+        $roleStudent = Role::create(['name' => 'Student']);
         $student = User::where('username', 'student')->first();
         if ($student) {
-            $student->assignRole($role2);
+            $student->assignRole($roleStudent);
         }
 
-        $role3 = Role::create(['name' => 'Super Admin']);
+        $roleAdmin = Role::create(['name' => 'Super Admin']);
+        $roleAdmin->givePermissionTo('list user');
+        $roleAdmin->givePermissionTo('create user');
+        $roleAdmin->givePermissionTo('edit user');
+        $roleAdmin->givePermissionTo('delete user');
         $admin = User::where('username', 'admin')->first();
         if ($admin) {
-            $admin->assignRole($role3);
+            $admin->assignRole($roleAdmin);
+        }
+
+        //Assign role for user
+        //Just allow 30 lecturer
+        $countLecturer = 0;
+        $allowLecturer = 30;
+        for ($number = 4; $number <= 120; $number++) {
+            $randomRole = rand(0, 1);
+            $user = User::find($number);
+            if ($user) {
+                if ($randomRole == 1 && $countLecturer < $allowLecturer) {
+                    $user->assignRole($roleLecturer);
+                    $countLecturer++;
+                } else {
+                    $user->assignRole($roleStudent);
+                }
+            }
         }
     }
 }
