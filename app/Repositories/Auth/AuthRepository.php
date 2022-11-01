@@ -51,9 +51,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => 0,
-            'user' => $user->makeHidden('roles'),
-            'role' => $user->getRoleNames(),
-            'permissions' => $user->getPermissionsViaRoles()->pluck('name'),
+            'user' => $user,
         ];
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,4 +29,8 @@ Route::prefix('auth')->group(function(){
     Route::post('/send-reset-password', [AuthController::class, 'sendResetPassword']);
     Route::put('/reset-password', [AuthController::class, 'resetPassword']);
     Route::put('/update-profile', [AuthController::class, 'updateProfile']);
+});
+
+Route::prefix('user')->group(function () {
+    Route::resource('/', UserController::class)->parameters(['' => 'id']);
 });
