@@ -28,7 +28,7 @@ class UserController extends Controller
     public function index(GetListUserRequest $request)
     {
         $data = $request->getParam();
-        return response()->json($this->userRepo->getListUsers('admin', $data));
+        return response()->json($this->userRepo->getListUsers($data));
     }
 
     /**
