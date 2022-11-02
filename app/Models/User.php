@@ -4,7 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Traits\Filterable;
 use App\Traits\Paginatable;
+use App\Traits\Sortable;
 use Cog\Laravel\Ban\Traits\Bannable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,7 +18,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, Bannable, HasRoles;
-    use Paginatable, SoftDeletes;
+    use Paginatable, SoftDeletes, Filterable, Sortable;
 
     /**
      * The "booted" method of the model.
@@ -28,9 +30,19 @@ class User extends Authenticatable
         static::addGlobalScope('softDelete', function ($builder) {
             return $builder->whereNull('deleted_at');
         });
-    }
 
+        static::addGlobalScope('order', function ($builder) {
+            return $builder->orderBy('created_at', 'desc');
+        });
+    }
+    
     protected $appends = ['role', 'permissions'];
+
+    protected $filterable = [
+        'email', 'status', 'role'
+    ];
+
+    public $sortables = ['created_at'];
 
     public function getRoleAttribute()
     {
@@ -41,6 +53,21 @@ class User extends Authenticatable
     public function getPermissionsAttribute()
     {
         return $this->getPermissionsViaRoles()->pluck('name');
+    }
+
+    public function filterEmail($query, $value)
+    {
+        return $query->where('email', 'LIKE', '%' . $value . '%');
+    }
+
+    public function filterStatus($query, $value)
+    {
+        return $query->whereIn('status', $value);
+    }
+
+    public function filterRole($query, $value)
+    {
+        return $query->role($value);
     }
 
     /**

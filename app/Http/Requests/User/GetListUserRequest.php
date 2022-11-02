@@ -28,16 +28,18 @@ class GetListUserRequest extends FormRequest
         return [
             'full_name' => 'sometimes|max:255',
             'email' => 'sometimes|max:255',
-            'status' => 'sometimes|in:Active,Inactive,Banned',
+            'status' => 'sometimes|array|in:Active,Inactive,Banned',
             'role' => 'sometimes|in:Lecturer,Student',
             'created_from' => 'sometimes|date_format:Y-m-d',
             'created_to' => 'sometimes|date_format:Y-m-d|after_or_equal:created_from',
+            'sort_name' => 'sometimes|in:created_at,full_name',
+            'sort_type' => 'sometimes|in:asc,desc',
         ];
     }
 
     public function getParam()
     {
-        return request()->only('full_name', 'email', 'status', 'role', 'created_from', 'created_to');
+        return request()->only('full_name', 'email', 'status', 'role', 'created_from', 'created_to', 'sort_type', 'sort_name');
     }
 
     protected function failedValidation(Validator $validator): void

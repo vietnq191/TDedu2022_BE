@@ -11,18 +11,18 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         return \App\Models\User::class;
     }
 
-    public function getListUsers($user_type, $request)
+    public function getListUsers($request)
     {
         if (isSuperAdmin()) {
             $users = $this->getModel()::whereHas("roles", function ($query) {
                 $query->whereIn("name", ["Lecturer", "Student"]);
-            })->paginate();
+            })->filter($request)->paginate();
         }
 
         if (isLecturer()) {
             $users = $this->getModel()::whereHas("roles", function ($query) {
                 $query->whereIn("name", ["Student"]);
-            })->paginate();
+            })->filter($request)->paginate();
         }
 
         $users->map(function ($item) {
@@ -31,8 +31,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $item->date_of_birth = $item->getProfiles->date_of_birth;
             $item->address = $item->getProfiles->address;
             $item->gender = $item->getProfiles->gender;
+            $item->makeHidden(['getProfiles']);
         });
         
-        return $users->makeHidden(['getProfiles']);
+        return $users;
     }
 }
