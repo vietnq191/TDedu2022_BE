@@ -6,4 +6,6 @@ use App\Repositories\RepositoryInterface;
 interface UserRepositoryInterface extends RepositoryInterface
 {
     public function getListUsers($request);
+
+    public function createUser($data = []);
 }

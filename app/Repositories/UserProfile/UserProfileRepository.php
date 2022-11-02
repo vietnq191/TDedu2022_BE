@@ -21,4 +21,18 @@ class UserProfileRepository extends BaseRepository implements UserProfileReposit
 
         return false;
     }
+
+    public function getProfiles($user)
+    {
+        try {
+            if ($user) {
+                $user = array_merge(json_decode($user, true), json_decode($user->getProfiles->makeHidden(['user_id']), true));
+            }
+
+            return $user;
+        } catch (\Throwable $th) {
+            dd($th);
+            return null;
+        }
+    }
 }
