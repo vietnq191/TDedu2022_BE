@@ -3,9 +3,20 @@
 namespace App\Repositories\User;
 
 use App\Repositories\BaseRepository;
+use App\Repositories\UserProfile\UserProfileRepository;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role as ModelsRole;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
+    public $userProfileRepo;
+
+    function __construct(UserProfileRepository $userProfileRepo)
+    {
+        $this->userProfileRepo = $userProfileRepo;
+    }
+    
     public function getModel()
     {
         return \App\Models\User::class;
@@ -35,5 +46,31 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         });
         
         return $users;
+    }
+
+    public function createUser($data = [])
+    {
+        DB::beginTransaction();
+        try {
+            $password = Str::random(8);
+
+            $user = $this->getModel()::create(array_merge(
+                $data,
+                ['password' => bcrypt($password)]
+            ));
+            $this->userProfileRepo->create(array_merge(
+                $data,
+                ['user_id' => $user->id]
+            ));
+            $role = ModelsRole::where('name', $data['role'])->first();
+            if ($role) {
+                $user->assignRole($role->name);
+            }
+            DB::commit();
+            return [$this->userProfileRepo->getProfiles($user), $password];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
     }
 }
