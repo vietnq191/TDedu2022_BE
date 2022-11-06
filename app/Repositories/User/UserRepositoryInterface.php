@@ -12,4 +12,8 @@ interface UserRepositoryInterface extends RepositoryInterface
     public function updateUser($id, $data = []);
 
     public function getUser($id);
+
+    public function delete($id);
+
+    public function bulkDelete($ids = []);
 }

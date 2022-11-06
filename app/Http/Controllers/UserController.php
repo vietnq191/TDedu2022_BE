@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\BulkDeleteUserRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\GetListUserRequest;
 use App\Http\Requests\User\GetUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
-use App\Models\User;
 use App\Repositories\User\UserRepositoryInterface;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -81,8 +80,24 @@ class UserController extends Controller
      * @param  \App\Models\UserProfile  $userProfile
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $userProfile)
+    public function destroy(GetUserRequest $request)
     {
-        //
+        $delete = $this->userRepo->delete($request->id);
+        if (!$delete) {
+            return response()->json(['error' => 'Delete user failed'], 400);
+        }
+
+        return response()->json(['message' => 'Deleted user']);
+    }
+
+    public function bulkDeleteUser(BulkDeleteUserRequest $request)
+    {
+        $user_ids = $request->getParam()['user_ids'] ?? [];
+        $delete = $this->userRepo->bulkDelete($user_ids);
+        if (!$delete) {
+            return response()->json(['error' => 'Bulk delete user failed'], 400);
+        }
+
+        return response()->json(['message' => 'Bulk delete user successfully']);
     }
 }

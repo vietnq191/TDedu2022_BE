@@ -34,3 +34,5 @@ Route::prefix('auth')->group(function(){
 Route::prefix('user')->group(function () {
     Route::resource('/', UserController::class)->parameters(['' => 'id']);
 });
+
+Route::delete('/bulk-delete-user', [UserController::class, 'bulkDeleteUser']);

@@ -11,21 +11,37 @@ class UserProfileRepository extends BaseRepository implements UserProfileReposit
         return \App\Models\UserProfile::class;
     }
 
+    private function getModelByUserID($id)
+    {
+        try {
+            return $this->getModel()::where('user_id', $id);
+        } catch (\Throwable $th) {
+            return null;
+        }
+    }
+
+    public function find($id)
+    {
+        try {
+            return $this->getModel()::where('user_id', $id)->first();
+        } catch (\Throwable $th) {
+            return null;
+        }
+    }
+
     public function update($id, $attributes = [])
     {
         try {
             unsetDataUserProfile($attributes);
 
-            $result = $this->getModel()::where('user_id', $id)->update($attributes);
+            $result = $this->getModelByUserID($id)->update($attributes);
             if ($result) {
                 return $result;
             }
-    
+
             return false;
-    
         } catch (\Throwable $th) {
-            dd($th);
-            return null;
+            return false;
         }
     }
 
@@ -38,8 +54,17 @@ class UserProfileRepository extends BaseRepository implements UserProfileReposit
 
             return $user;
         } catch (\Throwable $th) {
-            dd($th);
             return null;
         }
+    }
+
+    public function delete($id)
+    {
+        $delete = $this->getModelByUserID($id)->delete();
+        if ($delete) {
+            return true;
+        }
+
+        return false;
     }
 }

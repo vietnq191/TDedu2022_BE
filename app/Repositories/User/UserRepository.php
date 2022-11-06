@@ -24,6 +24,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function getListUsers($request)
     {
+        $users = null;
+
         if (isSuperAdmin()) {
             $users = $this->getModel()::whereHas("roles", function ($query) {
                 $query->whereIn("name", ["Lecturer", "Student"]);
@@ -36,7 +38,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             })->filter($request)->paginate();
         }
 
-        $users->map(function ($item) {
+        $users?->map(function ($item) {
             $item->full_name = $item->getProfiles->full_name;
             $item->mobile_phone = $item->getProfiles->mobile_phone;
             $item->date_of_birth = $item->getProfiles->date_of_birth;
@@ -97,5 +99,37 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         $user = $this->getModel()::find($id);
         return $this->userProfileRepo->getProfiles($user ?? null);
+    }
+
+    public function delete($id)
+    {
+        try {
+            $user = $this->getModel()::find($id)->delete();
+            $user_profiles = $this->userProfileRepo->delete($id);
+
+            if ($user && $user_profiles) {
+                return true;
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    public function bulkDelete($ids = [])
+    {
+        try {
+            foreach ($ids as $id) {
+                $delete = $this->delete($id);
+                if (!$delete) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
