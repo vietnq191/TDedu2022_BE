@@ -92,4 +92,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             return null;
         }
     }
+
+    public function getUser($id)
+    {
+        $user = $this->getModel()::find($id);
+        return $this->userProfileRepo->getProfiles($user ?? null);
+    }
 }

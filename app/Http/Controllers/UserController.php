@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\GetListUserRequest;
+use App\Http\Requests\User\GetUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use App\Repositories\User\UserRepositoryInterface;
@@ -54,12 +55,12 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\User  $userProfile
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function show(User $userProfile)
+    public function show(GetUserRequest $request)
     {
-        //
+        return response()->json($this->userRepo->getUser($request->id));
     }
 
     /**
