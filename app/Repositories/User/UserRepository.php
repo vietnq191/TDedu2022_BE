@@ -16,7 +16,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         $this->userProfileRepo = $userProfileRepo;
     }
-    
+
     public function getModel()
     {
         return \App\Models\User::class;
@@ -44,7 +44,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $item->gender = $item->getProfiles->gender;
             $item->makeHidden(['getProfiles']);
         });
-        
+
         return $users;
     }
 
@@ -71,6 +71,25 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         } catch (\Exception $e) {
             DB::rollBack();
             return false;
+        }
+    }
+
+    public function updateUser($id, $data = [])
+    {
+        try {
+            $user = $this->getModel()::find($id);
+            $user?->update($data);
+            $this->userProfileRepo->update($id, $data);
+
+            $role = ModelsRole::where('name', $data['role'])->first();
+            if ($role) {
+                $user?->roles()->detach();
+                $user?->assignRole($role->name);
+            }
+
+            return $this->userProfileRepo->getProfiles($user);
+        } catch (\Exception $e) {
+            return null;
         }
     }
 }
