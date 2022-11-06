@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\GetListUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use App\Repositories\User\UserRepositoryInterface;
 use Illuminate\Http\Request;
@@ -30,16 +31,6 @@ class UserController extends Controller
     {
         $data = $request->getParam();
         return response()->json($this->userRepo->getListUsers($data));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -72,26 +63,15 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\User  $userProfile
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(User $userProfile)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\User  $userProfile
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $userProfile)
+    public function update(UpdateUserRequest $request)
     {
-        //
+        return response()->json($this->userRepo->updateUser($request->id, $request->getParam()));
     }
 
     /**

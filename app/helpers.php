@@ -22,3 +22,9 @@ if(!function_exists('isLecturer')){
         return false;
     }
 }
+
+if(!function_exists('unsetDataUserProfile')){
+    function unsetDataUserProfile(&$attributes){
+        unset($attributes['username'], $attributes['role'], $attributes['status']);
+    }
+}

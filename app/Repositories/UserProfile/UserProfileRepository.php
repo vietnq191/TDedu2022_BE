@@ -13,13 +13,20 @@ class UserProfileRepository extends BaseRepository implements UserProfileReposit
 
     public function update($id, $attributes = [])
     {
-        unset($attributes['username']);
-        $result = $this->getModel()::where('user_id', $id)->update($attributes);
-        if ($result) {
-            return $result;
-        }
+        try {
+            unsetDataUserProfile($attributes);
 
-        return false;
+            $result = $this->getModel()::where('user_id', $id)->update($attributes);
+            if ($result) {
+                return $result;
+            }
+    
+            return false;
+    
+        } catch (\Throwable $th) {
+            dd($th);
+            return null;
+        }
     }
 
     public function getProfiles($user)
