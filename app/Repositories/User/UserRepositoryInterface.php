@@ -16,4 +16,8 @@ interface UserRepositoryInterface extends RepositoryInterface
     public function delete($id);
 
     public function bulkDelete($ids = []);
+
+    public function exportAllUser();
+
+    public function exportUser($ids = []);
 }

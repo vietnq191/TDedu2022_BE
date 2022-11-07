@@ -7,6 +7,8 @@ use App\Repositories\UserProfile\UserProfileRepository;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role as ModelsRole;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
@@ -35,7 +37,11 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         if (isLecturer()) {
             $users = $this->getModel()::whereHas("roles", function ($query) {
                 $query->whereIn("name", ["Student"]);
-            })->filter($request)->paginate();
+            })->whereHas('getProfiles', function ($query) use ($request) {
+                $query->filter($request)->sort($request);
+            })->with('getProfiles', function ($query) use ($request) {
+                $query->sort($request);
+            })->filter($request)->sort($request)->paginate();
         }
 
         $users?->map(function ($item) {
@@ -131,5 +137,108 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public function exportAllUser()
+    {
+        return $this->export($this->prepareDataUser());
+    }
+
+    public function exportUser($ids = [])
+    {
+        return $this->export($this->prepareDataUser($ids));
+    }
+
+    private function export($data = [], $fileName = 'export-all')
+    {
+        try {
+            // Create new Spreadsheet object
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            // Add style to the header
+            $styleArray = array(
+                'font' => array(
+                    'bold' => true,
+                ),
+                'alignment' => array(
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ),
+                'borders' => array(
+                    'bottom' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                        'color' => array('rgb' => '333333'),
+                    ),
+                ),
+                'fill' => array(
+                    'type'       => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                    'rotation'   => 90,
+                    'startcolor' => array('rgb' => '0d0d0d'),
+                    'endColor'   => array('rgb' => 'f2f2f2'),
+                ),
+            );
+            $spreadsheet->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
+            // Auto fit column to content
+            foreach (range('A', 'I') as $columnID) {
+                $spreadsheet->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
+            }
+            // Set the names of header cells
+            $sheet->setCellValue('A1', 'Number');
+            $sheet->setCellValue('B1', 'Full Name');
+            $sheet->setCellValue('C1', 'Username');
+            $sheet->setCellValue('D1', 'Email');
+            $sheet->setCellValue('E1', 'Phone');
+            $sheet->setCellValue('F1', 'Gender');
+            $sheet->setCellValue('G1', 'Date of birth');
+            $sheet->setCellValue('H1', 'Address');
+            $sheet->setCellValue('I1', 'Role');
+
+            // Add data
+            $index = 2;
+            foreach ($data as $user) {
+                $sheet->setCellValue('A' . $index, $index - 1);
+                $sheet->setCellValue('B' . $index, $user['get_profiles']['full_name']);
+                $sheet->setCellValue('C' . $index, $user['username']);
+                $sheet->setCellValue('D' . $index, $user['email']);
+                $sheet->setCellValue('E' . $index, $user['get_profiles']['mobile_phone']);
+                $sheet->setCellValue('F' . $index, convertCharToGender($user['get_profiles']['gender']));
+                $sheet->setCellValue('G' . $index, formatDate($user['get_profiles']['date_of_birth']));
+                $sheet->setCellValue('H' . $index, $user['get_profiles']['address']);
+                $sheet->setCellValue('I' . $index, $user['role'][0]);
+                $index++;
+            }
+
+            $fileName = 'export-all-user';
+            $writer = new Xlsx($spreadsheet);
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $fileName . '.xlsx"');
+            header('Cache-Control: max-age=0');
+            return $writer->save('php://output');
+        } catch (\Exception $e) {
+
+            return false;
+        }
+    }
+
+    private function prepareDataUser($user_ids = [])
+    {
+        $users = [];
+        if (isSuperAdmin()) {
+            $users = $this->getModel()::when($user_ids != [], function ($query) use ($user_ids) {
+                $query->whereIn('id', $user_ids);
+            })->whereHas("roles", function ($query) {
+                $query->whereIn("name", ["Lecturer", "Student"]);
+            })->with('getProfiles')->get()->toArray();
+        }
+
+        if (isLecturer()) {
+            $users = $this->getModel()::when($user_ids != [], function ($query) use ($user_ids) {
+                $query->whereIn('id', $user_ids);
+            })->whereHas("roles", function ($query) {
+                $query->whereIn("name", ["Student"]);
+            })->with('getProfiles')->get()->toArray();
+        }
+
+        return $users;
     }
 }

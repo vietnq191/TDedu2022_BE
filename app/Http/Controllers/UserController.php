@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\User\BulkDeleteUserRequest;
+use App\Http\Requests\User\BulkUserRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\GetListUserRequest;
 use App\Http\Requests\User\GetUserRequest;
@@ -90,7 +90,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Deleted user']);
     }
 
-    public function bulkDeleteUser(BulkDeleteUserRequest $request)
+    public function bulkDeleteUser(BulkUserRequest $request)
     {
         $user_ids = $request->getParam()['user_ids'] ?? [];
         $delete = $this->userRepo->bulkDelete($user_ids);
@@ -99,5 +99,16 @@ class UserController extends Controller
         }
 
         return response()->json(['message' => 'Bulk delete user successfully']);
+    }
+
+    public function exportAllUser()
+    {
+        return response($this->userRepo->exportAllUser());
+    }
+
+    public function exportUser(BulkUserRequest $request)
+    {
+        $user_ids = $request->getParam()['user_ids'] ?? [];
+        return response($this->userRepo->exportUser($user_ids));
     }
 }
