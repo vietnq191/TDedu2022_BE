@@ -11,7 +11,7 @@ trait Filterable
         foreach ($param as $field => $value) {
             $method = 'filter' . Str::studly($field);
 
-            if ($value === '') {
+            if ($value === '' || $value === null) {
                 continue;
             }
 

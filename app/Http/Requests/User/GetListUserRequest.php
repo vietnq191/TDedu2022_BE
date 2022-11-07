@@ -26,14 +26,14 @@ class GetListUserRequest extends FormRequest
     public function rules()
     {
         return [
-            'full_name' => 'sometimes|max:255',
-            'email' => 'sometimes|max:255',
-            'status' => 'sometimes|array|in:Active,Inactive,Banned',
-            'role' => 'sometimes|in:Lecturer,Student',
-            'created_from' => 'sometimes|date_format:Y-m-d',
-            'created_to' => 'sometimes|date_format:Y-m-d|after_or_equal:created_from',
-            'sort_name' => 'sometimes|in:created_at,full_name',
-            'sort_type' => 'sometimes|in:asc,desc',
+            'full_name' => 'nullable|max:255',
+            'email' => 'nullable|max:255',
+            'status' => 'nullable|in:Active,Inactive,Banned',
+            'role' => 'nullable|in:Lecturer,Student',
+            'created_from' => 'nullable|date_format:Y-m-d',
+            'created_to' => 'nullable|date_format:Y-m-d|after_or_equal:created_from',
+            'sort_name' => 'nullable|in:created_at,full_name',
+            'sort_type' => 'nullable|in:asc,desc',
         ];
     }
 

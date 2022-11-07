@@ -35,11 +35,11 @@ class User extends Authenticatable
             return $builder->orderBy('created_at', 'desc');
         });
     }
-    
+
     protected $appends = ['role', 'permissions'];
 
     protected $filterable = [
-        'email', 'status', 'role'
+        'email', 'status', 'role', 'created_from', 'created_to'
     ];
 
     public $sortables = ['created_at'];
@@ -62,12 +62,27 @@ class User extends Authenticatable
 
     public function filterStatus($query, $value)
     {
-        return $query->whereIn('status', $value);
+        return $query->where('status', $value);
     }
 
     public function filterRole($query, $value)
     {
         return $query->role($value);
+    }
+
+    public function filterCreatedFrom($query, $value)
+    {
+        return $query->whereBetween('created_at', [$value, now()->toDateString()]);
+    }
+
+    public function filterCreatedTo($query, $value)
+    {
+        $createFrom = $query->getQuery()->bindings['where'][2] ?? null;
+        if (!$createFrom) {
+            return $query->whereDate('created_at', '<=', $value);
+        }
+
+        return $query->whereDate('created_at', '>=', $createFrom)->whereDate('created_at', '<=', $value);
     }
 
     /**
