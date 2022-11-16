@@ -8,9 +8,11 @@ use App\Http\Requests\User\GetListUserRequest;
 use App\Http\Requests\User\GetUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Repositories\User\UserRepositoryInterface;
+use App\Traits\SendMailTrait;
 
 class UserController extends Controller
 {
+    use SendMailTrait;
     /**
      * @var UserRepositoryInterface|\App\Repositories\Repository
      */
@@ -47,6 +49,7 @@ class UserController extends Controller
         }
         $user = $create_user[0];
         $password = $create_user[1];
+        $this->sendPassword($user['full_name'], $user['email'], $password);
 
         return response()->json($user);
     }
