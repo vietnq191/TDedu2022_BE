@@ -34,10 +34,14 @@ class UpdateUserRequest extends FormRequest
         if (isSuperAdmin()) {
             $rule_role = config('apiconst.SUPER_ADMIN.VALIDATE_ROLE');
             $array_roles = config('apiconst.SUPER_ADMIN.ALLOW_ROLES');
+            $rule_status = config('apiconst.SUPER_ADMIN.VALIDATE_STATUS');
+            $rule_ban = config('apiconst.SUPER_ADMIN.VALIDATE_BAN');
         }
         if (isLecturer()) {
             $rule_role = config('apiconst.LECTURER.VALIDATE_ROLE');
             $array_roles = config('apiconst.LECTURER.ALLOW_ROLES');
+            $rule_status = config('apiconst.LECTURER.VALIDATE_STATUS');
+            $rule_ban = config('apiconst.LECTURER.VALIDATE_BAN');
         }
 
         return [
@@ -55,13 +59,26 @@ class UpdateUserRequest extends FormRequest
             'gender' => 'required|in:M,F,U',
             'address' => 'sometimes',
             'role' => $rule_role ?? '',
-            'status' => 'required|in:Active,Inactive,Banned'
+            'status' => $rule_status,
+            'duration' => $rule_ban,
+            'reason_ban' => 'sometimes|max:255',
         ];
     }
 
     public function getParam()
     {
-        return request()->only('username', 'full_name', 'mobile_phone', 'date_of_birth', 'gender', 'address', 'role', 'status');
+        return request()->only(
+            'username',
+            'full_name',
+            'mobile_phone',
+            'date_of_birth',
+            'gender',
+            'address',
+            'role',
+            'status',
+            'duration',
+            'reason_ban'
+        );
     }
 
     protected function prepareForValidation()

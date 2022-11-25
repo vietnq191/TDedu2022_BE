@@ -8,6 +8,7 @@ use App\Traits\Filterable;
 use App\Traits\Paginatable;
 use App\Traits\Sortable;
 use Cog\Laravel\Ban\Traits\Bannable;
+use Cog\Contracts\Ban\Bannable as BannableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements BannableContract
 {
     use HasApiTokens, HasFactory, Notifiable, Bannable, HasRoles;
     use Paginatable, SoftDeletes, Filterable, Sortable;
@@ -120,5 +121,10 @@ class User extends Authenticatable
     public function getProfiles()
     {
         return $this->belongsTo(UserProfile::class, 'id', 'user_id')->whereNull('user_profiles.deleted_at');
+    }
+
+    public function isBan()
+    {
+        return $this->belongsTo(Ban::class, 'id', 'bannable_id')->whereNull('bans.deleted_at');
     }
 }

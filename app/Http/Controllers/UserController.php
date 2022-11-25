@@ -114,4 +114,9 @@ class UserController extends Controller
         $user_ids = $request->getParam()['user_ids'] ?? [];
         return response($this->userRepo->exportUser($user_ids));
     }
+
+    public function banHistory(GetUserRequest $request) 
+    {
+        return response($this->userRepo->getBanHistory($request['id']));
+    }
 }
