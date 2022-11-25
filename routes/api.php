@@ -38,3 +38,4 @@ Route::prefix('user')->group(function () {
 Route::delete('/bulk-delete-user', [UserController::class, 'bulkDeleteUser']);
 Route::get('/export-all-user', [UserController::class, 'exportAllUser']);
 Route::get('/export-user', [UserController::class, 'exportUser']);
+Route::get('/ban-history/{id}', [UserController::class, 'banHistory']);

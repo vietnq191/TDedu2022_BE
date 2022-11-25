@@ -59,3 +59,45 @@ if (!function_exists('formatDate')) {
         return date_format(date_create($stringDate), 'Y-m-d');
     }
 }
+
+if (!function_exists('convertDurationBan')) {
+    function convertDurationBan($time)
+    {
+        switch ($time) {
+            case "5m":
+                return '+5 minute';
+            case "10m":
+                return '+10 minute';
+            case "15m":
+                return '+15 minute';
+            case "30m":
+                return '+30 minute';
+            case "1hours":
+                return '+1 hour';
+                break;
+            default:
+                return null;
+        }
+    }
+}
+
+if (!function_exists('convertDurationToSave')) {
+    function convertDurationToSave($time)
+    {
+        switch ($time) {
+            case "5m":
+                return '5 minutes';
+            case "10m":
+                return '10 minutes';
+            case "15m":
+                return '15 minutes';
+            case "30m":
+                return '30 minutes';
+            case "1hours":
+                return '1 hours';
+                break;
+            default:
+                return 'Until updated';
+        }
+    }
+}

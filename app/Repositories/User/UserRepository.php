@@ -4,14 +4,18 @@ namespace App\Repositories\User;
 
 use App\Repositories\BaseRepository;
 use App\Repositories\UserProfile\UserProfileRepository;
+use App\Traits\UserBanTrait;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role as ModelsRole;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Facades\Auth;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
+    use UserBanTrait;
+
     public $userProfileRepo;
 
     function __construct(UserProfileRepository $userProfileRepo)
@@ -88,14 +92,20 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $user = $this->getModel()::find($id);
             $user?->update($data);
             $this->userProfileRepo->update($id, $data);
+            $user->unban();
+            //Ban user
+            if ($data['duration'] && $data['status'] == 'Banned') {
+                $created_by_user = Auth::guard('api')?->user();
 
+                $this->banUser($user, $data, $created_by_user);
+            }
             $role = ModelsRole::where('name', $data['role'])->first();
             if ($role) {
                 $user?->roles()->detach();
                 $user?->assignRole($role->name);
             }
 
-            return $this->userProfileRepo->getProfiles($user);
+            return $this->userProfileRepo->getProfiles($user->with('isBan')->first());
         } catch (\Exception $e) {
             return null;
         }
@@ -240,5 +250,26 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         return $users;
+    }
+
+    public function getBanHistory($id)
+    {
+        try {
+            $listBan = $this->getListBan($id);
+            foreach ($listBan as $ban) {
+                $ban->created_by_user = $this->getBasicProfile($ban->created_by_id);
+            }
+
+            return $listBan;
+        } catch (\Exception $e) {
+            dd($e);
+        }
+    }
+
+    private function getBasicProfile($id)
+    {
+        $user = $this->getUser($id);
+
+        return $user;
     }
 }

@@ -20,4 +20,6 @@ interface UserRepositoryInterface extends RepositoryInterface
     public function exportAllUser();
 
     public function exportUser($ids = []);
+
+    public function getBanHistory($id);
 }
