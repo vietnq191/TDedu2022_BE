@@ -101,3 +101,10 @@ if (!function_exists('convertDurationToSave')) {
         }
     }
 }
+
+if (!function_exists('textDisplayBan')) {
+    function textDisplayTimeBan($time, $time_remaining)
+    {
+        return "You have banned in ". $time .", you shall able to login in next " . $time_remaining . " minutes";
+    }
+}

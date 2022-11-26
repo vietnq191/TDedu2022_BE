@@ -8,14 +8,17 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\SendResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Models\Ban;
 use App\Repositories\Auth\AuthRepositoryInterface;
 use App\Repositories\PasswordReset\PasswordResetRepositoryInterface;
+use App\Traits\UserBanTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    use UserBanTrait;
     /**
      * @var AuthRepositoryInterface|\App\Repositories\Repository
      */
@@ -33,7 +36,11 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         //To do: Error message
-        $messages = ['user_notfound' => 'Your authentication information is incorrect. Please try again'];
+        $messages = [
+            'user_notfound' => 'Your authentication information is incorrect. Please try again',
+            'user_inactive' => 'Your account is inactive',
+            'user_ban_until_updated' => 'You have banned. Please contact to admin for the reason'
+        ];
 
         $data = $request->getParam();
 
@@ -45,7 +52,30 @@ class AuthController extends Controller
             return response()->json(array(
                 'username' => array($messages['user_notfound'])
             ), 400);
-        } else if (!Hash::check($request['password'], $user->password)) {
+        }
+        if($user->status == 'Inactive')
+        {
+            return response()->json(array(
+                'username' => array($messages['user_inactive'])
+            ), 400);
+        }
+        if($user->status == 'Banned')
+        {
+            $userBanned = Ban::where('bannable_id', $user->id)
+            ->where('bannable_type', $user->getMorphClass())->latest('updated_at')->whereNull('deleted_at')->first();
+            if($userBanned && $userBanned->duration == "Until updated")
+            {
+                return response()->json(array(
+                    'username' => array($messages['user_ban_until_updated'])
+                ), 400);
+            }
+            if($userBanned)
+            {
+                $time_remaining = $this->getTimeRemaining($userBanned->expired_at);
+                return response()->json(['email' => [textDisplayTimeBan($userBanned->duration, $time_remaining)]], 400);
+            }
+        }
+        if (!Hash::check($request['password'], $user->password)) {
             return response()->json(array(
                 'password' => array($messages['user_notfound'])
             ), 400);
