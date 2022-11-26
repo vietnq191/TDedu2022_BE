@@ -114,7 +114,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function getUser($id)
     {
         $user = $this->getModel()::find($id);
-        return $this->userProfileRepo->getProfiles($user ?? null);
+        return $this->userProfileRepo->getProfiles($user->with('isBan')->first() ?? null);
     }
 
     public function delete($id)

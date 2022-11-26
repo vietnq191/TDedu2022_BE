@@ -34,7 +34,7 @@ class AuthRepository extends BaseRepository implements AuthRepositoryInterface
     {
         return $this->getModel()::where(function ($query) use ($request) {
             return $query->where('email', $request)->orWhere('username', $request);
-        })->where('status', 'ACTIVE')->first();
+        })->first();
     }
 
     private function createPassportToken($user, $token)
