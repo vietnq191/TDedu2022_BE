@@ -125,6 +125,6 @@ class User extends Authenticatable implements BannableContract
 
     public function isBan()
     {
-        return $this->belongsTo(Ban::class, 'id', 'bannable_id')->whereNull('bans.deleted_at');
+        return $this->belongsTo(Ban::class, 'id', 'bannable_id')->where('bannable_type', User::class)->whereNull('bans.deleted_at');
     }
 }

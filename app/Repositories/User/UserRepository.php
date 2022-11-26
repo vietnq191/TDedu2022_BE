@@ -105,7 +105,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
                 $user?->assignRole($role->name);
             }
 
-            return $this->userProfileRepo->getProfiles($user->with('isBan')->first());
+            $user = $this->getModel()::where('id', $id)->with('isBan')->first();
+            return $this->userProfileRepo->getProfiles($user);
         } catch (\Exception $e) {
             return null;
         }
@@ -113,8 +114,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function getUser($id)
     {
-        $user = $this->getModel()::find($id);
-        return $this->userProfileRepo->getProfiles($user->with('isBan')->first() ?? null);
+        $user = $this->getModel()::where('id', $id)->with('isBan')->first();
+        return $this->userProfileRepo->getProfiles($user ?? null);
     }
 
     public function delete($id)
