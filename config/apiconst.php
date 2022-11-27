@@ -11,8 +11,8 @@ return [
     'LECTURER' => [
         'VALIDATE_ROLE' => 'required|in:Student',
         'ALLOW_ROLES' => ['Student'],
-        'VALIDATE_STATUS' => 'required|in:Active,Inactive',
-        'VALIDATE_BAN' => 'sometimes',
+        'VALIDATE_STATUS' => 'required|in:Active,Inactive,Banned',
+        'VALIDATE_BAN' => 'required_if:status,Banned|in:,5m,10m,15m,30m,1hours,until_update',
     ],
     
 ];
