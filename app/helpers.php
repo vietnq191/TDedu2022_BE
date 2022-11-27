@@ -29,7 +29,7 @@ if (!function_exists('isLecturer')) {
 if (!function_exists('unsetDataUserProfile')) {
     function unsetDataUserProfile(&$attributes)
     {
-        unset($attributes['username'], $attributes['role'], $attributes['status']);
+        unset($attributes['username'], $attributes['role'], $attributes['status'], $attributes['duration'], $attributes['reason_ban']);
     }
 }
 

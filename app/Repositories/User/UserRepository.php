@@ -35,7 +35,11 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         if (isSuperAdmin()) {
             $users = $this->getModel()::whereHas("roles", function ($query) {
                 $query->whereIn("name", ["Lecturer", "Student"]);
-            })->filter($request)->paginate();
+            })->whereHas('getProfiles', function ($query) use ($request) {
+                $query->filter($request)->sort($request);
+            })->with('getProfiles', function ($query) use ($request) {
+                $query->sort($request);
+            })->filter($request)->sort($request)->paginate();
         }
 
         if (isLecturer()) {
