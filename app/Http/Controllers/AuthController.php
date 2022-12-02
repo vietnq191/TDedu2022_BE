@@ -31,6 +31,7 @@ class AuthController extends Controller
         $this->authRepo = $authRepo;
         $this->passwordResetRepo = $passwordResetRepo;
         $this->authUser = Auth::guard('api')->user();
+        $this->middleware('ban')->only('updateProfile', 'changePassword');
     }
 
     public function login(LoginRequest $request)
