@@ -15,6 +15,8 @@ use App\Traits\UserBanTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -31,7 +33,7 @@ class AuthController extends Controller
         $this->authRepo = $authRepo;
         $this->passwordResetRepo = $passwordResetRepo;
         $this->authUser = Auth::guard('api')->user();
-        $this->middleware('ban')->only('updateProfile', 'changePassword');
+        $this->middleware('ban')->only('updateProfile', 'changePassword', 'userProfile');
     }
 
     public function login(LoginRequest $request)
@@ -40,7 +42,8 @@ class AuthController extends Controller
         $messages = [
             'user_notfound' => 'Your authentication information is incorrect. Please try again',
             'user_inactive' => 'Your account is inactive',
-            'user_ban_until_updated' => 'You have banned. Please contact to admin for the reason'
+            'user_ban_until_updated' => 'You have banned. Please contact to admin for the reason',
+            'too_many_login_attempts' => 'You have banned. Too many login attempts'
         ];
 
         $data = $request->getParam();
@@ -76,13 +79,35 @@ class AuthController extends Controller
                 return response()->json(['email' => [textDisplayTimeBan($userBanned->duration, $time_remaining)]], 400);
             }
         }
+
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), config('apiconst.time_login_fail'))) {
+            $user->status = 'Banned';
+            $user->save();
+            $userBan = $user->ban([
+                'comment' => 'Too many login attempts',
+                'expired_at' => '+5 minute'
+            ]);
+            $userBan->duration = '5 minutes';
+            $userBan->save();
+
+            RateLimiter::clear($this->throttleKey());
+            return response()->json(['email' => array($messages['too_many_login_attempts'])], 400);
+        }
+
         if (!Hash::check($request['password'], $user->password)) {
+            RateLimiter::hit($this->throttleKey(), 900);
             return response()->json(array(
                 'password' => array($messages['user_notfound'])
             ), 400);
         }
 
+        RateLimiter::clear($this->throttleKey());
         return response()->json($this->authRepo->login($user));
+    }
+
+    private function throttleKey()
+    {
+        return Str::lower(request('email')) . '|' . request()->ip();
     }
 
     public function logout()
