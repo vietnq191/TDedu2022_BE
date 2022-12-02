@@ -6,6 +6,9 @@ if (!function_exists('isSuperAdmin')) {
     function isSuperAdmin()
     {
         $user =  Auth::guard('api')->user();
+        if(!$user) {
+            abort(response()->json(['error' => 'Unauthorized'], 401));
+        }
         if (in_array('Super Admin', $user->role->toArray())) {
             return true;
         }
@@ -18,6 +21,10 @@ if (!function_exists('isLecturer')) {
     function isLecturer()
     {
         $user =  Auth::guard('api')->user();
+        if(!$user) {
+            abort(response()->json(['error' => 'Unauthorized'], 401));
+        }
+
         if (in_array('Lecturer', $user->role->toArray())) {
             return true;
         }
@@ -105,6 +112,6 @@ if (!function_exists('convertDurationToSave')) {
 if (!function_exists('textDisplayBan')) {
     function textDisplayTimeBan($time, $time_remaining)
     {
-        return "You have banned in ". $time .", you shall able to login in next " . $time_remaining . " minutes";
+        return "You have banned in " . $time . ", you shall able to login in next " . $time_remaining . " minutes";
     }
 }

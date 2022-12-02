@@ -21,6 +21,7 @@ class UserController extends Controller
     public function __construct(UserRepositoryInterface $userRepo)
     {
         $this->userRepo = $userRepo;
+        $this->middleware('ban');
     }
 
 
