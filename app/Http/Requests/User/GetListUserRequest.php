@@ -32,7 +32,7 @@ class GetListUserRequest extends FormRequest
             'role' => 'nullable|in:Lecturer,Student',
             'created_from' => 'nullable|date_format:Y-m-d',
             'created_to' => 'nullable|date_format:Y-m-d|after_or_equal:created_from',
-            'sort_name' => 'nullable|in:created_at,full_name',
+            'sort_name' => 'nullable|in:created_at,full_name,email,status',
             'sort_type' => 'nullable|in:asc,desc',
         ];
     }

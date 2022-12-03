@@ -15,6 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable implements BannableContract
 {
@@ -43,7 +44,7 @@ class User extends Authenticatable implements BannableContract
         'email', 'status', 'role', 'created_from', 'created_to'
     ];
 
-    public $sortables = ['created_at'];
+    public $sortables = ['created_at', 'email', 'status'];
 
     public function getRoleAttribute()
     {
