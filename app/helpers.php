@@ -115,3 +115,26 @@ if (!function_exists('textDisplayBan')) {
         return "You have banned in " . $time . ", you shall able to login in next " . $time_remaining . " minutes";
     }
 }
+
+if (!function_exists('sendNotificationToTelegram')) {
+    function sendNotificationToTelegram($message){
+        $apiToken = "5835143920:AAFspV9E7O_Aw89tg4CKZ3nLbVBZ1FizmuY";
+        $data = [
+            'chat_id' => '@cdptw2', 
+            'text' => $message
+        ];
+        file_get_contents("https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($data));    
+    }
+}
+
+if (!function_exists('getCurrentUserLogin')) {
+    function getCurrentUserLogin()
+    {
+        $user =  Auth::guard('api')->user();
+        if(!$user) {
+            abort(response()->json(['error' => 'Unauthorized'], 401));
+        }
+
+        return $user;
+    }
+}

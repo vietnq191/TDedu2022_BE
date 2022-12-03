@@ -11,6 +11,7 @@ use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Models\Ban;
 use App\Repositories\Auth\AuthRepositoryInterface;
 use App\Repositories\PasswordReset\PasswordResetRepositoryInterface;
+use App\Traits\SendNotificationToTelegramTrait;
 use App\Traits\UserBanTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +21,7 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    use UserBanTrait;
+    use UserBanTrait, SendNotificationToTelegramTrait;
     /**
      * @var AuthRepositoryInterface|\App\Repositories\Repository
      */
@@ -90,6 +91,9 @@ class AuthController extends Controller
             $userBan->duration = '5 minutes';
             $userBan->save();
 
+            //Send notification user banned by too many login attempts
+            $this->sendNotificationToTelegram("The " . $user->email . " been banned for 5 minutes due to too many incorrect login attempts.");
+
             RateLimiter::clear($this->throttleKey());
             return response()->json(['email' => array($messages['too_many_login_attempts'])], 400);
         }
@@ -148,6 +152,9 @@ class AuthController extends Controller
                     return response()->json(['message' => ['Password change failed']]);
                 }
     
+            //Send notification user change password
+            $this->sendNotificationToTelegram("The " . $user->email . " has changed password.");
+
                 return response()->json(['message' => ['Password changed successfully.']]);
             } else {
                 return response()->json(['old_password' => [$messages['incorrect_password']]], 400);
@@ -212,6 +219,9 @@ class AuthController extends Controller
         }
         //To do: Delete token
         $this->passwordResetRepo->delete($passwordReset->id);
+
+        //Send notification user change password
+        $this->sendNotificationToTelegram("The " . $user->email . " has changed password by reset password.");
 
         return response()->json([
             'message' => ['Password changed successfully.'],
