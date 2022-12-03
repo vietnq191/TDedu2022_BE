@@ -53,11 +53,6 @@ class UserController extends Controller
         $password = $create_user[1];
         $this->sendPassword($user['full_name'], $user['email'], $password);
 
-        //Get current user login
-        $currentUserLogin = getCurrentUserLogin();
-        //Send notification user banned by too many login attempts
-        $this->sendNotificationToTelegram("The account " . $user['email'] . " has been created by " . $currentUserLogin->email);
-
         return response()->json($user);
     }
 
@@ -82,9 +77,6 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request)
     {
         $user = $this->userRepo->getUser($request->id);
-        $currentUserLogin = getCurrentUserLogin();
-        //Send notification user banned by too many login attempts
-        $this->sendNotificationToTelegram("The " . $currentUserLogin->email . " updated information of account " . $user['email']);
 
         return response()->json($this->userRepo->updateUser($request->id, $request->getParam()));
     }
@@ -103,10 +95,6 @@ class UserController extends Controller
             return response()->json(['error' => 'Delete user failed'], 400);
         }
 
-        $currentUserLogin = getCurrentUserLogin();
-        //Send notification user banned by too many login attempts
-        $this->sendNotificationToTelegram("The " . $currentUserLogin->email . " deleted account " . $user['email']);
-
         return response()->json(['message' => 'Deleted user']);
     }
 
@@ -117,10 +105,6 @@ class UserController extends Controller
         if (!$delete) {
             return response()->json(['error' => 'Bulk delete user failed'], 400);
         }
-
-        $currentUserLogin = getCurrentUserLogin();
-        //Send notification user banned by too many login attempts
-        $this->sendNotificationToTelegram("The " . $currentUserLogin->email . " deleted account with array ID is " . json_encode($user_ids));
 
         return response()->json(['message' => 'Bulk delete user successfully']);
     }
@@ -136,7 +120,7 @@ class UserController extends Controller
         return response($this->userRepo->exportUser($user_ids));
     }
 
-    public function banHistory(GetUserRequest $request) 
+    public function banHistory(GetUserRequest $request)
     {
         return response($this->userRepo->getBanHistory($request['id']));
     }
